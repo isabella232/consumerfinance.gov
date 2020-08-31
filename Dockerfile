@@ -14,7 +14,7 @@ ENV SCL_PYTHON_VERSION ${scl_python_version}
 # Stops Python default buffering to stdout, improving logging to the console.
 ENV PYTHONUNBUFFERED 1
 
-ENV APP_HOME /src/cfgov-refresh
+ENV APP_HOME /src/consumerfinance.gov
 RUN mkdir -p ${APP_HOME}
 WORKDIR ${APP_HOME}
 
@@ -34,6 +34,7 @@ RUN yum -y install \
         mailcap \
         postgresql10 \
         which \
+        gettext \
         ${SCL_PYTHON_VERSION} && \
     yum clean all && rm -rf /var/cache/yum && \
     echo "source scl_source enable ${SCL_PYTHON_VERSION}" > /etc/profile.d/enable_scl_python.sh && \
@@ -106,12 +107,14 @@ RUN yum -y install ${SCL_HTTPD_VERSION} ${SCL_PYTHON_VERSION}-mod_wsgi && \
 
 # Copy the cfgov directory form the build image
 COPY --from=cfgov-build --chown=apache:apache ${CFGOV_PATH}/cfgov ${CFGOV_PATH}/cfgov
-COPY --from=cfgov-build --chown=apache:apache ${CFGOV_PATH}/docker-entrypoint.sh ${CFGOV_PATH}/docker-entrypoint.sh
+COPY --from=cfgov-build --chown=apache:apache ${CFGOV_PATH}/docker-entrypoint.sh ${CFGOV_PATH}/refresh-data.sh ${CFGOV_PATH}/
 COPY --from=cfgov-build --chown=apache:apache ${CFGOV_PATH}/static.in ${CFGOV_PATH}/static.in
 
 
 RUN yum clean all && rm -rf /var/cache/yum && \
     chown -R apache:apache ${APP_HOME} ${SCL_HTTPD_ROOT}/usr/share/httpd ${SCL_HTTPD_ROOT}/var/run
+
+ENV PATH="/opt/rh/${SCL_PYTHON_VERSION}/root/usr/bin:${PATH}"
 
 # Remove files flagged by image vulnerability scanner
 RUN cd /opt/rh/rh-python36/root/usr/lib/python3.6/site-packages/ && \
