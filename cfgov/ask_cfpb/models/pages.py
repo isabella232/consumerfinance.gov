@@ -824,10 +824,6 @@ class ArticlePage(CFGOVPage):
 
     sidebar_panels = [StreamFieldPanel('sidebar'), ]
 
-    search_fields = Page.search_fields + [
-        index.SearchField('title'),
-    ]
-
     edit_handler = TabbedInterface([
         ObjectList(content_panels, heading='Content'),
         ObjectList(sidebar_panels, heading='Sidebar'),
