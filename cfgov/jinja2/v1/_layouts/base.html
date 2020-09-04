@@ -258,10 +258,30 @@
         ) }}
     {% endblock header %}
 
+
     {# WAGTAILUSERBAR IN-PAGE VIEW CONTROLS #}
     {{ wagtailuserbar() }}
 
     {% block banner_top %}
+      {% if page and page.is_archived %}
+      {% import 'macros/util/format/datetime.html' as dt %}
+      <div class="archived-banner">
+        <div class="content_wrapper">
+          {{ svg_icon( 'information-round' ) }}
+          <div class="archived-banner_content">
+          <h4>
+            {% if page.archived_date %}
+              This content was archived on <time datetime='{{ page.archived_date }}'>{{ dt.format_date(page.archived_date, True) }}</time>.
+            {% else %}
+              This content is archived
+            {% endif %}
+          </h4>
+          <div style="margin-top:10px;">Archiving message goes here</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
     {% endblock %}
 
     {# PRIMARY CONTENT #}

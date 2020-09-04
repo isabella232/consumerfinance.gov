@@ -75,7 +75,6 @@ def get_secondary_nav_items(request, current_page):
             sibling = sibling
 
         item_selected = current_page.pk == sibling.pk
-
         item = {
             'title': sibling.title,
             'slug': sibling.slug,
@@ -83,8 +82,8 @@ def get_secondary_nav_items(request, current_page):
             'children': [],
             'active': item_selected,
             'expanded': item_selected,
+            'is_archived': sibling.is_archived
         }
-
         if page.id == sibling.id:
             visible_children = list(filter(
                 lambda c: (
@@ -106,6 +105,7 @@ def get_secondary_nav_items(request, current_page):
                         'slug': child.slug,
                         'url': child.relative_url(site),
                         'active': child_selected,
+                        'is_archived': child.is_archived
                     })
 
         nav_items.append(item)

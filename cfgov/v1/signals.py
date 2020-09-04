@@ -45,4 +45,13 @@ def invalidate_post_preview(sender, **kwargs):
     caches['post_preview'].delete(instance.post_preview_cache_key)
 
 
+# def update_archived_date(sender, **kwargs):
+#     instance = kwargs['instance']
+#     if instance.is_archived and instance.archived_date == None:
+#         instance.archived_date = timezone.now().date()
+#         revision = instance.save_revision()
+#         revision.publish()
+
+
 page_published.connect(invalidate_post_preview)
+# page_published.connect(update_archived_date)

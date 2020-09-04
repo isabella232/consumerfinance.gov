@@ -271,6 +271,37 @@
     }
 }
 
+.archived-banner {
+    background-color: @teal;
+    /*border-bottom: 1px solid @gold;*/
+    position: relative;
+    color: @white;
+    .content_wrapper {
+      padding: 20px 20px;
+      box-sizing: border-box;
+    }
+    .cf-icon-svg {
+        fill: @white;
+        position: absolute;
+    }
+
+    .cf-icon-svg + &_content {
+        padding-left: unit( 25px / @base-font-size-px, em );
+    }
+
+     .respond-to-min( @bp-sm-min, {
+        // Increase the icon size.
+        .cf-icon-svg {
+            font-size: unit( @size-iv / @base-font-size-px, em );
+        }
+      });
+
+}
+
+.o-secondary-navigation_list .archived {
+  color: @gray-60 !important;
+}
+
 /* topdoc
   name: EOF
   eof: true
