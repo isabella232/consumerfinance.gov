@@ -132,8 +132,19 @@ WAGTAILSEARCH_BACKENDS = {
     'default': {
         'BACKEND': 'wagtail.search.backends.db',
     },
-    'fulltext': {
-        'BACKEND': 'wagtail.contrib.postgres_search.backend',
+    # 'fulltext': {
+    #     'BACKEND': 'wagtail.contrib.postgres_search.backend',
+    # },
+    'elasticsearch':
+    {
+        'BACKEND': 'wagtail.search.backends.elasticsearch2',
+        'HOSTS': [
+            {
+                'host': os.environ.get("ES_HOST", "localhost"),
+                'port': os.environ.get("ES_PORT", "9200"),
+            }
+        ],
+        'INDEX': "wagtail",
     },
 }
 
