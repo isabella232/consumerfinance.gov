@@ -108,9 +108,9 @@ def ask_search(request, language='en', as_json=False):
             'suggestion': search.suggestion,
             'results': [
                 {
-                    'question': result.autocomplete,
+                    'question': result.question,
                     'url': result.url,
-                    'text': result.text,
+                    # 'text': result.text,
                     'preview': result.preview,
                 }
                 for result in search.queryset
@@ -126,7 +126,12 @@ def ask_search(request, language='en', as_json=False):
         # Commented out because 'AnswerPage' object has no attribute 'autocomplete'
         # AttributeError: 'AnswerPage' object has no attribute 'preview'
         # (result.url, result.autocomplete, result.preview)
-        (result.url, None, None)
+        {
+            'question': result.question,
+            'url': result.url,
+            # 'text': result.text,
+            'preview': result.preview,
+        }
         for result in search.queryset
     ]
     return results_page.serve(request)
@@ -139,14 +144,18 @@ def ask_autocomplete(request, language='en'):
         return JsonResponse([], safe=False)
 
     try:
-        sqs = SearchQuerySet().models(AnswerPage)
-        sqs = sqs.autocomplete(
-            autocomplete=term,
+        sqs = AnswerPage.objects.filter(
             language=language
+        ).autocomplete(
+            term, backend='elasticsearch'
         )
-        results = [{'question': result.autocomplete,
-                    'url': result.url}
-                   for result in sqs[:20]]
+        results = [
+            {
+                'question': result.question,
+                'url': result.url
+            }
+            for result in sqs[:20]
+        ]
         return JsonResponse(results, safe=False)
     except IndexError:
         return JsonResponse([], safe=False)
