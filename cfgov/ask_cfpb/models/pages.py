@@ -74,9 +74,7 @@ def get_reusable_text_snippet(snippet_title):
 
 def get_answer_preview(page):
     """Extract an answer summary for use in search result previews."""
-    raw_text = extract_raw_text(page.answer_content.stream_data)
-    full_text = strip_tags(" ".join([page.short_answer, raw_text]))
-    return truncate(full_text)
+    return page.preview
 
 
 def get_portal_or_portal_search_page(portal_topic, language='en'):
@@ -622,8 +620,10 @@ class AnswerPage(CFGOVPage):
     sidebar_panels = [StreamFieldPanel('sidebar'), ]
 
     search_fields = Page.search_fields + [
-        index.SearchField('answer_content'),
-        index.SearchField('short_answer')
+        index.SearchField('text', es_extra={}),
+        # index.SearchField('answer_content'),
+        # index.SearchField('short_answer'),
+        index.FilterField('language'),
     ]
 
     edit_handler = TabbedInterface([
@@ -703,6 +703,16 @@ class AnswerPage(CFGOVPage):
     @property
     def split_test_id(self):
         return self.answer_base.id
+
+    @property
+    def text(self):
+        raw_text = extract_raw_text(self.answer_content.stream_data)
+        full_text = strip_tags(" ".join([self.short_answer, raw_text]))
+        return full_text
+
+    @property
+    def preview(self):
+        return truncate(self.text)
 
 
 class ArticleLink(Orderable, models.Model):

@@ -16,17 +16,11 @@ def make_safe(term):
 
 class AskSearch:
     def __init__(self, search_term, query_base=None, language='en'):
-        # self.query_base = query_base or SearchQuerySet().filter(
-        #     language=language)
-        self.query_base = query_base
-
+        self.query_base = query_base.filter(language=language)
         self.search_term = make_safe(search_term).strip()
-
-        # self.queryset = self.query_base.filter(content=self.search_term)
         self.queryset = self.query_base.search(
             self.search_term, backend='elasticsearch'
         )
-
         self.suggestion = None
 
     def suggest(self, request):

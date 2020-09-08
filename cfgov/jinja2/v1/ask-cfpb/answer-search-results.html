@@ -41,10 +41,10 @@
                         block__flush-top">
 
                 <div class="question_list">
-                {% for question in results %}
+                {% for result in results %}
                     <article class="question_summary question_summary__full">
-                        <p class="question_title"><a href="{{ question[0] }}" class="kbq">{{ question[1]|safe }}</a></p>
-                        <p class="qans">{{ question[2] }}</p>
+                        <p class="question_title"><a href="{{ result.url }}" class="kbq">{{ result.question|safe }}</a></p>
+                        <p class="qans">{{ result.preview }}</p>
                     </article>
                 {% endfor %}
 
