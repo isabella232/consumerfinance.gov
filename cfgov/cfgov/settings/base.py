@@ -145,6 +145,65 @@ WAGTAILSEARCH_BACKENDS = {
             }
         ],
         'INDEX': "wagtail",
+        'INDEX_SETTINGS': {
+            "settings": {
+                "analysis": {
+                    "analyzer": {
+                        "ngram_analyzer": {
+                            "type": "custom",
+                            "tokenizer": "lowercase",
+                            "filter": ["wagtail_ngram"],
+                        },
+                        "edgengram_analyzer": {
+                            "type": "custom",
+                            "tokenizer": "lowercase",
+                            "filter": ["wagtail_edgengram"],
+                        },
+                        "synonym_en": {
+                            "tokenizer": "standard",
+                            "filter": ["synonyms_en"],
+                        },
+                        "synonym_es": {
+                            "tokenizer": "standard",
+                            "filter": ["synonyms_es"],
+                        },
+                    },
+                    "tokenizer": {
+                        "wagtail_ngram_tokenizer": {
+                            "type": "nGram",
+                            "min_gram": 3,
+                            "max_gram": 15,
+                        },
+                        "wagtail_edgengram_tokenizer": {
+                            "type": "edgeNGram",
+                            "min_gram": 3,
+                            "max_gram": 15,
+                            "token_chars": [ "letter", "digit" ]
+                        },
+                    },
+                    "filter": {
+                        "wagtail_ngram": {
+                            "type": "nGram",
+                            "min_gram": 3,
+                            "max_gram": 15,
+                        },
+                        "wagtail_edgengram": {
+                            "type": "edgeNGram",
+                            "min_gram": 3,
+                            "max_gram": 15,
+                        },
+                        "synonyms_en": {
+                            "type": "synonym",
+                            "synonyms_path": "analysis/synonyms_en.txt",
+                        },
+                        "synonyms_es": {
+                            "type": "synonym",
+                            "synonyms_path": "analysis/synonyms_es.txt",
+                        },
+                    },
+                }
+            }
+        }
     },
 }
 

@@ -620,9 +620,9 @@ class AnswerPage(CFGOVPage):
     sidebar_panels = [StreamFieldPanel('sidebar'), ]
 
     search_fields = Page.search_fields + [
-        index.SearchField('text', es_extra={}),
-        # index.SearchField('answer_content'),
-        # index.SearchField('short_answer'),
+        index.SearchField('text', boost=10, es_extra={
+            "analyzer": "synonym_en"
+        }),
         index.FilterField('language'),
     ]
 
