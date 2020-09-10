@@ -2,6 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from haystack.fields import CharField as BaseCharField
 
+from wagtail.search.index import SearchField
+
+
+class SuggestionSearchField(SearchField):
+    pass
+
 
 class CharFieldWithSynonyms(BaseCharField):
 

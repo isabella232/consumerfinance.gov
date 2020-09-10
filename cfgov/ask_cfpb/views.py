@@ -98,6 +98,7 @@ def ask_search(request, language='en', as_json=False):
         language=language,
         query_base=AnswerPage.objects
     )
+
     if search.queryset.count() == 0:
         search.suggest(request=request)
 
@@ -105,7 +106,7 @@ def ask_search(request, language='en', as_json=False):
         results = {
             'query': search_term,
             'result_query': search.search_term,
-            'suggestion': search.suggestion,
+            'suggestion': search.suggestion(),
             'results': [
                 {
                     'question': result.question,
@@ -123,9 +124,6 @@ def ask_search(request, language='en', as_json=False):
     results_page.result_query = search.search_term
     results_page.suggestion = search.suggestion
     results_page.answers = [
-        # Commented out because 'AnswerPage' object has no attribute 'autocomplete'
-        # AttributeError: 'AnswerPage' object has no attribute 'preview'
-        # (result.url, result.autocomplete, result.preview)
         {
             'question': result.question,
             'url': result.url,

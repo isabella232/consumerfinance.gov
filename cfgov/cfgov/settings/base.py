@@ -137,11 +137,14 @@ WAGTAILSEARCH_BACKENDS = {
     # },
     'elasticsearch':
     {
-        'BACKEND': 'wagtail.search.backends.elasticsearch2',
+        # 'BACKEND': 'wagtail.search.backends.elasticsearch2',
+        # 'BACKEND': 'wagtail.search.backends.elasticsearch7',
+        # 'BACKEND': 'search.backends.elasticsearch7',
+        'BACKEND': 'search.backends.elasticsearch2',
         'HOSTS': [
             {
-                'host': os.environ.get("ES_HOST", "localhost"),
-                'port': os.environ.get("ES_PORT", "9200"),
+                'host': 'elasticsearch',
+                'port': '9200'
             }
         ],
         'INDEX': "wagtail",
@@ -149,62 +152,26 @@ WAGTAILSEARCH_BACKENDS = {
             "settings": {
                 "analysis": {
                     "analyzer": {
-                        "ngram_analyzer": {
-                            "type": "custom",
-                            "tokenizer": "lowercase",
-                            "filter": ["wagtail_ngram"],
-                        },
-                        "edgengram_analyzer": {
-                            "type": "custom",
-                            "tokenizer": "lowercase",
-                            "filter": ["wagtail_edgengram"],
+                        "default": {
+                            "tokenizer": "standard",
+                            "filter": ["synonyms_en"],
                         },
                         "synonym_en": {
                             "tokenizer": "standard",
                             "filter": ["synonyms_en"],
                         },
-                        "synonym_es": {
-                            "tokenizer": "standard",
-                            "filter": ["synonyms_es"],
-                        },
-                    },
-                    "tokenizer": {
-                        "wagtail_ngram_tokenizer": {
-                            "type": "nGram",
-                            "min_gram": 3,
-                            "max_gram": 15,
-                        },
-                        "wagtail_edgengram_tokenizer": {
-                            "type": "edgeNGram",
-                            "min_gram": 3,
-                            "max_gram": 15,
-                            "token_chars": [ "letter", "digit" ]
-                        },
                     },
                     "filter": {
-                        "wagtail_ngram": {
-                            "type": "nGram",
-                            "min_gram": 3,
-                            "max_gram": 15,
-                        },
-                        "wagtail_edgengram": {
-                            "type": "edgeNGram",
-                            "min_gram": 3,
-                            "max_gram": 15,
-                        },
                         "synonyms_en": {
                             "type": "synonym",
-                            "synonyms_path": "analysis/synonyms_en.txt",
-                        },
-                        "synonyms_es": {
-                            "type": "synonym",
-                            "synonyms_path": "analysis/synonyms_es.txt",
-                        },
-                    },
+                            # "synonyms_path": "synonyms/synonyms_en.txt"
+                            "synonyms_path": "analysis/synonyms_en.txt"
+                        }
+                    }
                 }
             }
         }
-    },
+    }
 }
 
 MIDDLEWARE = (

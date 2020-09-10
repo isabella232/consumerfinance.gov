@@ -28,6 +28,7 @@ from wagtailautocomplete.edit_handlers import AutocompletePanel
 from ask_cfpb.models import blocks as ask_blocks
 from ask_cfpb.models.search import AskSearch
 from ask_cfpb.search_indexes import extract_raw_text, truncatissimo as truncate
+from search.fields import SuggestionSearchField
 from v1 import blocks as v1_blocks
 from v1.atomic_elements import molecules, organisms
 from v1.models import (
@@ -620,9 +621,7 @@ class AnswerPage(CFGOVPage):
     sidebar_panels = [StreamFieldPanel('sidebar'), ]
 
     search_fields = Page.search_fields + [
-        index.SearchField('text', boost=10, es_extra={
-            "analyzer": "synonym_en"
-        }),
+        SuggestionSearchField('text', boost=10),
         index.FilterField('language'),
     ]
 

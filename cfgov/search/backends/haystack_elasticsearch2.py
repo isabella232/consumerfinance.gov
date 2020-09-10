@@ -42,3 +42,4 @@ class CFGOVElasticsearch2SearchBackend(Elasticsearch2SearchBackend):
 
 class CFGOVElasticsearch2SearchEngine(Elasticsearch2SearchEngine):
     backend = CFGOVElasticsearch2SearchBackend
+
