@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.defaultfilters import slugify
-from haystack.query import SearchQuerySet
 
 from wagtail.core.models import Site
 from wagtailsharing.models import SharingSite

@@ -1,7 +1,6 @@
 from wagtail.search.backends.elasticsearch2 import (
-    Elasticsearch2Mapping,
-    Elasticsearch2SearchBackend,
-    Elasticsearch2SearchResults,
+    Elasticsearch2Mapping, Elasticsearch2SearchBackend,
+    Elasticsearch2SearchResults
 )
 
 from search.backends.elasticsearch7 import (

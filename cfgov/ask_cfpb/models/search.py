@@ -1,7 +1,3 @@
-
-from flags.state import flag_enabled
-
-
 UNSAFE_CHARACTERS = [
     '#', '%', ';', '^', '~', '`', '|',
     '<', '>', '[', ']', '{', '}', '\\'
@@ -33,5 +29,3 @@ class AskSearch:
         ):
             self.queryset = self.query_base.filter(content=suggestion)
             self.search_term, self.suggestion = suggestion, self.search_term
-
-

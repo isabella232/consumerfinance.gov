@@ -1,8 +1,8 @@
 from wagtail.search.backends.elasticsearch7 import (
-    Elasticsearch7Mapping,
-    Elasticsearch7SearchBackend,
-    Elasticsearch7SearchResults,
+    Elasticsearch7Mapping, Elasticsearch7SearchBackend,
+    Elasticsearch7SearchResults
 )
+
 from search.fields import SuggestionSearchField
 
 
