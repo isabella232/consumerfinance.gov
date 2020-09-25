@@ -214,6 +214,7 @@ class PortalSearchPage(
     portal_category = None
     query_base = None
     glossary_terms = None
+    category_slug = None
     overview = models.TextField(blank=True)
     content_panels = CFGOVPage.content_panels + [
         FieldPanel('portal_topic'),
@@ -404,10 +405,10 @@ class PortalSearchPage(
 
     @route(r'^(?P<category>[^/]+)/$')
     def portal_category_page(self, request, **kwargs):
-        category_slug = kwargs.get('category')
-        if category_slug not in self.category_map:
+        self.category_slug = kwargs.get('category')
+        if self.category_slug not in self.category_map:
             raise Http404
-        self.portal_category = self.category_map.get(category_slug)
+        self.portal_category = self.category_map.get(self.category_slug)
         self.title = "{} {}".format(
             self.portal_topic.title(self.language),
             self.portal_category.title(self.language).lower())
