@@ -1,6 +1,6 @@
 // This file contains the 'view' of all financial info, including costs, loans, etc
 
-import { updateAffordingChart, updateCostOfBorrowingChart, updateExpensesView, updateMakePlanChart, updateMaxDebtChart } from '../dispatchers/update-view.js';
+import { updateAffordingChart, updateCostOfBorrowingChart, updateExpensesView, updateMakePlanChart, updateMaxDebtChart, updateUrlQueryString } from '../dispatchers/update-view.js';
 import numberToMoney from 'format-usd';
 import { bindEvent } from '../../../../js/modules/util/dom-events';
 import { closest } from '../../../../js/modules/util/dom-traverse';
@@ -66,6 +66,8 @@ const financialView = {
         recalculateFinancials();
       }
     }
+
+    updateUrlQueryString();
   },
 
   /**
@@ -90,9 +92,11 @@ const financialView = {
       financialView._inputChangeTimeout = setTimeout(
         function() {
           updateFinancial( name, value );
+          updateUrlQueryString();
         }, 500 );
     } else {
       updateFinancial( name, value );
+      updateUrlQueryString();
     }
   },
 

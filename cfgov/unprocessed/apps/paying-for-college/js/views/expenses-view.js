@@ -5,7 +5,7 @@ import { closest } from '../../../../js/modules/util/dom-traverse';
 import { getExpensesValue } from '../dispatchers/get-model-values.js';
 import { selectorMatches } from '../util/other-utils';
 import { stringToNum } from '../util/number-utils.js';
-import { updateAffordingChart, updateCostOfBorrowingChart } from '../dispatchers/update-view.js';
+import { updateAffordingChart, updateCostOfBorrowingChart, updateUrlQueryString } from '../dispatchers/update-view.js';
 import { updateExpense, updateRegion } from '../dispatchers/update-models.js';
 
 const expensesView = {
@@ -35,11 +35,14 @@ const expensesView = {
     } else {
       updateExpense( name, value );
     }
+
+    updateUrlQueryString();
   },
 
   _handleRegionChange: function() {
     updateRegion( expensesView._regionSelect.value );
     updateAffordingChart();
+    updateUrlQueryString();
   },
 
   _addInputListeners: function() {
