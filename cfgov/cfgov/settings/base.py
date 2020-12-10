@@ -4,7 +4,7 @@ from django.conf import global_settings
 from django.utils.translation import ugettext_lazy as _
 
 import dj_database_url
-from elasticsearch7 import RequestsHttpConnection
+from elasticsearch import RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 from unipath import DIRS, Path
 
@@ -64,7 +64,6 @@ INSTALLED_APPS = (
     "wagtailautocomplete",
     "wagtailflags",
     "watchman",
-    "haystack",
     "ask_cfpb",
     "agreements",
     "django.contrib.admin",
@@ -104,9 +103,9 @@ INSTALLED_APPS = (
     "retirement_api",
     "ratechecker",
     "countylimits",
-    "complaint_search",
+    # "complaint_search",
     "rest_framework",
-    "ccdb5_ui",
+    # "ccdb5_ui",
     "mptt",
     "crtool",
 )
@@ -300,40 +299,7 @@ TAGGIT_CASE_INSENSITIVE = True
 WAGTAIL_USER_CREATION_FORM = "v1.auth_forms.UserCreationForm"
 WAGTAIL_USER_EDIT_FORM = "v1.auth_forms.UserEditForm"
 
-SHEER_ELASTICSEARCH_SERVER = (
-    os.environ.get("ES_HOST", "localhost")
-    + ":"
-    + os.environ.get("ES_PORT", "9200")
-)
-SHEER_ELASTICSEARCH_INDEX = os.environ.get(
-    "SHEER_ELASTICSEARCH_INDEX", "content"
-)
 ELASTICSEARCH_BIGINT = 50000
-
-SHEER_ELASTICSEARCH_SETTINGS = {
-    "settings": {
-        "analysis": {
-            "analyzer": {
-                "my_edge_ngram_analyzer": {
-                    "tokenizer": "my_edge_ngram_tokenizer"
-                },
-                "tag_analyzer": {
-                    "tokenizer": "keyword",
-                    "filter": "lowercase",
-                },
-            },
-            "tokenizer": {
-                "my_edge_ngram_tokenizer": {
-                    "type": "edgeNGram",
-                    "min_gram": "2",
-                    "max_gram": "5",
-                    "token_chars": ["letter", "digit"],
-                }
-            },
-        }
-    }
-}
-
 
 # LEGACY APPS
 MAPBOX_ACCESS_TOKEN = os.environ.get("MAPBOX_ACCESS_TOKEN")
@@ -342,18 +308,6 @@ HOUSING_COUNSELOR_S3_PATH_TEMPLATE = (
     "https://s3.amazonaws.com/files.consumerfinance.gov"
     "/a/assets/hud/{file_format}s/{zipcode}.{file_format}"
 )
-
-HAYSTACK_CONNECTIONS = {
-    "default": {
-        "ENGINE": "search.backends.CFGOVElasticsearch2SearchEngine",
-        "URL": SHEER_ELASTICSEARCH_SERVER,
-        "INDEX_NAME": os.environ.get(
-            "HAYSTACK_ELASTICSEARCH_INDEX",
-            SHEER_ELASTICSEARCH_INDEX + "_haystack",
-        ),
-        "INCLUDE_SPELLING": True,
-    }
-}
 
 ELASTICSEARCH_INDEX_SETTINGS = {
     "settings": {
@@ -762,8 +716,6 @@ FLAGS = {
     # Controls whether or not to include Qualtrics Web Intercept code for the
     # Q42020 Ask CFPB customer satisfaction survey.
     "ASK_SURVEY_INTERCEPT": [],
-    # Enable django-elasticsearch-dsl and disable haystack in regulations3k.
-    "ELASTICSEARCH_DSL_REGULATIONS": [("boolean", False)],
 }
 
 
