@@ -8,6 +8,7 @@ import { refreshExpenses, updateFinancial, updateSchoolData } from '../dispatche
 import { updateState } from '../dispatchers/update-state.js';
 import { getProgramList, getSchoolValue, getStateValue } from '../dispatchers/get-model-values.js';
 import { updateFinancialView, updateGradMeterChart, updateRepaymentMeterChart } from '../dispatchers/update-view.js';
+import { stringToNum } from '../util/number-utils.js';
 
 
 const schoolView = {
@@ -78,14 +79,19 @@ const schoolView = {
   _handleProgramSelectChange: function( event ) {
     const target = event.target;
     const salary = target.options[target.selectedIndex].dataset.programSalary;
-    const programName = target.options[target.selectedIndex].innerText;
+    let programName = target.options[target.selectedIndex].innerText;
     let pid = target.value;
     if ( pid === 'null' ) {
       pid = false;
+      programName = '';
     }
     updateState.byProperty( 'pid', pid );
     updateState.byProperty( 'programName', programName );
-    updateFinancial( 'salary_annual', salary );
+    if ( salary ) {
+      updateFinancial( 'salary_annual', salary );
+    } else {
+      updateFinancial( 'salary_annual', stringToNum( getSchoolValue( 'medianAnnualPay6Yr' ) ) );
+    }
     refreshExpenses();
   },
 
@@ -163,6 +169,22 @@ const schoolView = {
 
   },
 
+  /**
+   * updateViewWithErrors - updates form fields with classes to show error states.
+   * NOTE: The appearance of error messages is mostly found in the state-based.less rules
+   */
+  updateViewWithErrors: () => {
+    const errorChecks = [ 'programType', 'programLength', 'programLevel', 'programRate',
+      'programHousing', 'programDependency' ];
+
+    const searchBox = document.querySelector( '#search__school-input' );
+    if ( getStateValue( 'schoolSelected' ) === false ) {
+      searchBox.classList.add( 'a-text-input__warning' );
+    } else {
+      searchBox.classList.remove( 'a-text-input__warning' );
+    }
+  },
+
   _updateProgramList: () => {
     let level = 'undergrad';
     if ( getStateValue( 'programType' ) === 'graduate' ) {
@@ -196,7 +218,7 @@ const schoolView = {
   _updateSchoolRadioButtons: () => {
     const campus = getSchoolValue( 'onCampusAvail' );
     const control = getSchoolValue( 'Public' );
-    const buttons = [ 'programLength', 'programType', 'programHousing', 'programRate', 'programStudentType' ];
+    const buttons = [ 'programLength', 'programType', 'programHousing', 'programRate', 'programStudentDependency' ];
 
 
     schoolView._searchResults.classList.remove( 'active' );
