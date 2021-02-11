@@ -47,6 +47,34 @@ const hooks = {
     } );
   },
 
+
+  csv_test( data ) {
+    return data.map( d => ( {
+      name: d.Quarter,
+      y: Number( d['18-30'] )
+    } ) );
+  },
+
+  csv_datetime( data ) {
+    const q2m = { 1: '01', 2: '04', 3: '07', 4: '10' };
+    return data.map( d => {
+      const qtr = d.Quarter;
+      return {
+        x: new Date( `${ qtr.slice( 0, 4 ) }-${ q2m[qtr.slice( -1 )] }-01` ),
+        y: Number( d['18-30'] )
+      };
+    } );
+  },
+
+  csv_t2( data ) {
+    return data.map( d => Number( d['18-30'] )
+    );
+  },
+
+  csv_cats( data ) {
+    return data.map( d => d.name );
+  },
+
   enforcement_counts( data ) {
     const d = data.slice().sort(
       ( a, b ) => Number( new Date( a.initial_filing_date ) ) -

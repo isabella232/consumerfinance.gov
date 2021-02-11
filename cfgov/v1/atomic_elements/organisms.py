@@ -570,6 +570,19 @@ class SimpleChart(blocks.StructBlock):
         help_text='URL of the chart\'s data source or an array of JSON data'
     )
 
+    data_series = blocks.TextBlock(
+        required=False,
+        help_text='A string or array of keys (JSON) or headers (CSV) to '
+        'include as data in the chart. Labels may be included via: '
+        '{"key": <key>, "label": <label>}'
+    )
+
+    x_axis_data = blocks.TextBlock(
+        required=False,
+        help_text='A string for a key/column or data array to include as '
+        'categories or x values, depending on chart type.'
+    )
+
     description = blocks.CharBlock(
         required=True,
         help_text='Accessible description of the chart content'

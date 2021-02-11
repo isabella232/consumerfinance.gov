@@ -18,6 +18,9 @@ const styles = {
   },
   plotOptions: {
     series: {
+      animation: {
+        duration: 500
+      },
       states: {
         hover: {
           enabled: false
@@ -31,7 +34,7 @@ const styles = {
     distance: 15,
     padding: 15,
     shadow: { color: '#b4b5b6', opacity: 0.2 },
-    shared: true,
+    shared: false,
     split: false,
     style: {
       pointerEvents: 'auto',

@@ -5,6 +5,7 @@
 import 'core-js/features/promise';
 
 import Highcharts from 'highcharts/highstock';
+import Papa from 'papaparse';
 import accessibility from 'highcharts/modules/accessibility';
 import chartHooks from './chart-hooks.js';
 import defaultBar from './bar-styles.js';
@@ -38,15 +39,23 @@ function storeInCache( url, data ) {
 /**
  * Fetches JSON data
  * @param {string} url The url to fetch data from
+ * @param {Boolean} isCSV Whether the data to fetch is a CSV
  * @returns {Promise} Promise that resolves to JSON data
  */
-function fetchData( url ) {
+function fetchData( url, isCSV ) {
   const data = fetchFromCache( url );
   if ( data ) return Promise.resolve( data );
-  const p = fetch( url ).then( res => res.json().then( d => {
-    storeInCache( url, d );
-    return Promise.resolve( d );
-  } ) );
+  const p = fetch( url ).then( res => {
+    let prom;
+    if ( isCSV ) prom = res.text();
+    else prom = res.json();
+
+    return prom.then( d => {
+      if ( isCSV ) d = Papa.parse( d, { header: true } ).data;
+      storeInCache( url, d );
+      return Promise.resolve( d );
+    } );
+  } );
   storeInCache( url, p );
   return p;
 }
@@ -88,14 +97,65 @@ function applyOverrides( styleOverrides, obj, data ) {
 }
 
 /**
+ * Pulls specified keys from the resolved data object
+ * @param {array} data Array of data from JSON, CSV or directly entered
+ * @param {string} series The keys for data to render into the chart
+ * @param {string} x_axis_data Key or array of categories
+ * @returns {object} Correctly formatted series object
+ */
+function extractSeries( data, { series, xAxisData, chartType } ) {
+  console.log( series, xAxisData, chartType );
+  if ( chartType === 'datetime' ) {
+    // make x: new Date(data[xAxisData])
+  }
+
+  if ( series ) {
+    if ( series.match( /^\[/ ) ) {
+      series = JSON.parse( series );
+    } else {
+      series = [ series ];
+    }
+    const seriesData = [];
+    data.forEach( obj => {
+      const d = {};
+      series.forEach( s => {
+        d[s] = obj[s];
+      } );
+      seriesData.push( d );
+    } );
+    return { data: data, series: seriesData };
+  }
+  return { data: data };
+}
+
+/**
+ * Formats processed series data as expected by Highcharts
+ * @param {array} data Series data in various acceptable formats
+ * @returns {object} Correctly formatted series object
+ */
+function formatSeries( data ) {
+  const { series } = data;
+  if ( series ) {
+    if ( !isNaN( series[0] ) ) {
+      return [ { data: series } ];
+    }
+    return Object.keys( series[0] ).map( key => ( {
+      name: key,
+      data: series.map( d => Number( d[key] ) )
+    } ) );
+  }
+  return [ { data: data.data } ];
+}
+
+/**
  * Overrides default chart options using provided Wagtail configurations
- * @param {object} data The data to provide to the chart
+ * @param {object|array} data The data to provide to the chart
  * @param {object} dataProps (destructured) data-* props attached to the chart HTML
  * @returns {object} The configured style object
  */
 function makeChartOptions(
   data,
-  { chartType, styleOverrides, description, xAxisLabel, yAxisLabel }
+  { chartType, styleOverrides, description, xAxisData, xAxisLabel, yAxisLabel }
 ) {
   const defaultObj = JSON.parse(
     JSON.stringify( getDefaultChartObject( chartType ) )
@@ -105,14 +165,32 @@ function makeChartOptions(
     applyOverrides( styleOverrides, defaultObj, data );
   }
 
+  if ( xAxisData && chartType !== 'datetime' ) {
+    defaultObj.xAxis.categories = resolveKey( data.data, xAxisData );
+  }
   /* eslint-disable-next-line */
   defaultObj.title = { text: undefined };
-  defaultObj.series = [ { data } ];
+  defaultObj.series = formatSeries( data );
+  console.log( defaultObj.series );
   defaultObj.accessibility.description = description;
   defaultObj.yAxis.title.text = yAxisLabel;
   if ( xAxisLabel ) defaultObj.xAxis.title.text = xAxisLabel;
 
   return defaultObj;
+}
+
+/**
+ * Resolves provided x axis or series data
+ * @param {array} data Data provided to the chart
+ * @param {string} key Key to resolve from data, or categories provided directly
+ * @returns {array} Resolved array of data
+ */
+function resolveKey( data, key ) {
+  // Array provided directly
+  if ( key.match( /^\[/ ) ) {
+    return JSON.parse( key );
+  }
+  return data.map( d => d[key] );
 }
 
 /**
@@ -139,7 +217,8 @@ function resolveOverride( override, data ) {
  */
 function resolveData( source ) {
   if ( source.match( /^http/i ) || source.match( /^\// ) ) {
-    return fetchData( source );
+    const isCSV = Boolean( source.match( /csv$/i ) );
+    return fetchData( source, isCSV );
   }
   return Promise.resolve( JSON.parse( source ) );
 }
@@ -279,6 +358,7 @@ function attachFilter(
     selectHeader.innerHTML = headerText;
     const applyHooks = styleOverrides && styleOverrides.match( 'hook__' );
 
+    // TODO filter everything
     chart.series[0].setData( filtered, !applyHooks );
 
     if ( applyHooks ) {
@@ -296,6 +376,7 @@ function attachFilter(
   * @param {object} data The raw chart data, untransformed
   * @param {function} transform The transform function for this chart
   * */
+// TODO data is currently raw
 function initFilters( dataset, chartNode, chart, data, transform ) {
   let filters = dataset.filters;
   if ( !filters ) return;
@@ -339,15 +420,24 @@ function buildChart( chartNode ) {
   const target = chartNode.getElementsByClassName( 'simple-chart-target' )[0];
   const { source, transform } = target.dataset;
 
-  resolveData( source.trim() ).then( d => {
-    const data =
-      transform && chartHooks[transform] ? chartHooks[transform]( d ) : d;
+  resolveData( source.trim() ).then( raw => {
+    const series = extractSeries( raw, target.dataset );
+    const transformed = transform && chartHooks[transform] ?
+      chartHooks[transform]( raw, series ) :
+      null;
+
+    const data = {
+      raw,
+      series,
+      transformed
+    };
+    console.log( data );
     const chart = Highcharts.chart(
       target,
       makeChartOptions( data, target.dataset )
     );
     initFilters(
-      target.dataset, chartNode, chart, d, transform && chartHooks[transform]
+      target.dataset, chartNode, chart, raw, transform && chartHooks[transform]
     );
   } );
 }
