@@ -110,7 +110,6 @@ const hooks = {
         } );
       }
     } );
-
     return Object.keys( years )
       .sort()
       .map( k => ( { name: k, y: years[k] } ) );
@@ -131,8 +130,8 @@ const hooks = {
   },
 
 
-  enforcement_barCategories( data ) {
-    return data.map( d => d.name );
+  enforcement_barCategories( { transformed } ) {
+    return transformed.map( d => d.name );
   },
 
   enforcement_reliefTooltipFormatter() {
@@ -156,7 +155,7 @@ const hooks = {
   },
 
   enforcement_actionsTooltipFormatter() {
-    const { x, y, name, url } = this.points[0].point.options;
+    const { x, y, name, url } = this.point.options;
     return (
       `<a style="padding: 15px;" rel="noopener noreferrer" target="_blank" href="${ url }">` +
       `<div style="margin-bottom:0.5em"><b>${ new Date( x ).toLocaleDateString(
@@ -176,8 +175,8 @@ const hooks = {
   },
 
   enforcement_reliefBarTooltipFormatter() {
-    const { y, name } = this.points[0].point.options;
-    return `<b>${ name }</b><br/>Total relief: <b>$${ y.toLocaleString() }</b>`;
+    const { x, y } = this;
+    return `<b>${ x }</b><br/>Total relief: <b>$${ y.toLocaleString() }</b>`;
   }
 };
 

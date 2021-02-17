@@ -98,39 +98,50 @@ function applyOverrides( styleOverrides, obj, data ) {
 
 /**
  * Pulls specified keys from the resolved data object
- * @param {array} data Array of data from JSON, CSV or directly entered
+ * @param {array} rawData Array of data from JSON, CSV or directly entered
  * @param {string} series The keys for data to render into the chart
  * @param {string} x_axis_data Key or array of categories
- * @returns {object} Correctly formatted series object
+ * @returns {array} Series data
  */
-function extractSeries( data, { series, xAxisData, chartType } ) {
-  console.log( series, xAxisData, chartType );
-  if ( chartType === 'datetime' ) {
-    // make x: new Date(data[xAxisData])
-  }
-
+function extractSeries( rawData, { series, xAxisData, chartType } ) {
   if ( series ) {
     if ( series.match( /^\[/ ) ) {
       series = JSON.parse( series );
     } else {
       series = [ series ];
     }
+
+    if ( chartType === 'datetime' ) {
+      if ( !xAxisData ) xAxisData = 'x';
+    }
+
     const seriesData = [];
-    data.forEach( obj => {
-      const d = {};
-      series.forEach( s => {
-        d[s] = obj[s];
+
+    // array of {name: str, data: arr (maybe of obj)}
+    series.forEach( currSeries => {
+      const currArr = [];
+      const currObj = { name: currSeries, data: currArr };
+
+      rawData.forEach( obj => {
+        let d = Number( obj[currSeries] );
+        if ( chartType === 'datetime' ) {
+          d = {
+            x:  new Date( obj[xAxisData] ),
+            y: d
+          };
+        }
+        currArr.push( d );
       } );
-      seriesData.push( d );
+      seriesData.push( currObj );
     } );
-    return { data: data, series: seriesData };
+    return seriesData;
   }
-  return { data: data };
+  return null;
 }
 
 /**
  * Formats processed series data as expected by Highcharts
- * @param {array} data Series data in various acceptable formats
+ * @param {object} data Series data in various acceptable formats
  * @returns {object} Correctly formatted series object
  */
 function formatSeries( data ) {
@@ -139,17 +150,14 @@ function formatSeries( data ) {
     if ( !isNaN( series[0] ) ) {
       return [ { data: series } ];
     }
-    return Object.keys( series[0] ).map( key => ( {
-      name: key,
-      data: series.map( d => Number( d[key] ) )
-    } ) );
+    return series;
   }
-  return [ { data: data.data } ];
+  return [ { data: data.transformed || data.raw } ];
 }
 
 /**
  * Overrides default chart options using provided Wagtail configurations
- * @param {object|array} data The data to provide to the chart
+ * @param {object} data The data to provide to the chart
  * @param {object} dataProps (destructured) data-* props attached to the chart HTML
  * @returns {object} The configured style object
  */
@@ -166,12 +174,11 @@ function makeChartOptions(
   }
 
   if ( xAxisData && chartType !== 'datetime' ) {
-    defaultObj.xAxis.categories = resolveKey( data.data, xAxisData );
+    defaultObj.xAxis.categories = resolveKey( data.raw, xAxisData );
   }
   /* eslint-disable-next-line */
   defaultObj.title = { text: undefined };
   defaultObj.series = formatSeries( data );
-  console.log( defaultObj.series );
   defaultObj.accessibility.description = description;
   defaultObj.yAxis.title.text = yAxisLabel;
   if ( xAxisLabel ) defaultObj.xAxis.title.text = xAxisLabel;
@@ -181,22 +188,22 @@ function makeChartOptions(
 
 /**
  * Resolves provided x axis or series data
- * @param {array} data Data provided to the chart
+ * @param {array} rawData Data provided to the chart
  * @param {string} key Key to resolve from data, or categories provided directly
  * @returns {array} Resolved array of data
  */
-function resolveKey( data, key ) {
+function resolveKey( rawData, key ) {
   // Array provided directly
   if ( key.match( /^\[/ ) ) {
     return JSON.parse( key );
   }
-  return data.map( d => d[key] );
+  return rawData.map( d => d[key] );
 }
 
 /**
  * Mechanism for passing functions or applied functions to the chart style object
  * @param {string} override Prefixed refered to a function in chart-hooks.js
- * @param {string} data Data provided to chart
+ * @param {object} data Data provided to chart
  * @returns {function|string} Result of the override or the provided unmatched style
  */
 function resolveOverride( override, data ) {
@@ -226,7 +233,7 @@ function resolveData( source ) {
 /**
  * Wires up select filters, if present
  * @param {object} filter Object with a filter key and possible label
- * @param {object} data The raw chart data, untransformed
+ * @param {object} data The raw chart data
  * @returns {array} List of options for the select
  */
 function getOptions( filter, data ) {
@@ -423,7 +430,7 @@ function buildChart( chartNode ) {
   resolveData( source.trim() ).then( raw => {
     const series = extractSeries( raw, target.dataset );
     const transformed = transform && chartHooks[transform] ?
-      chartHooks[transform]( raw, series ) :
+      chartHooks[transform]( raw ) :
       null;
 
     const data = {
@@ -431,7 +438,6 @@ function buildChart( chartNode ) {
       series,
       transformed
     };
-    console.log( data );
     const chart = Highcharts.chart(
       target,
       makeChartOptions( data, target.dataset )
